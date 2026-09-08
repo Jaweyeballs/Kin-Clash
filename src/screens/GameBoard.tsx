@@ -54,7 +54,7 @@ export default function GameBoard({ onQuit }: GameBoardProps) {
           <span className="score-label">TEAM 1</span>
           <span className="score-value">{scores[0]}</span>
         </div>
-        <h1 className="game-brand">KIN CLASH</h1>
+        <h1 className="game-brand">FAMILY FEUD</h1>
         <div className="score-card right">
           <span className="score-label">TEAM 2</span>
           <span className="score-value">{scores[1]}</span>
@@ -64,25 +64,33 @@ export default function GameBoard({ onQuit }: GameBoardProps) {
       <h2 className="prompt-banner">{TEST_QUESTION.prompt}</h2>
 
       <section className="board-wrap">
-        <div className="board">
-          {TEST_QUESTION.answers.map((answer, i) => {
-            const isRevealed = revealed[i];
-            return (
-              <button
-                key={answer.text}
-                className={`answer-slot${isRevealed ? " revealed" : ""}`}
-                type="button"
-                onClick={() => reveal(i)}
-                disabled={isRevealed || awarded}
-              >
-                <span className={`slot-inner${isRevealed ? "" : " slot-hidden"}`}>
-                  <span className="slot-num">{i + 1}</span>
-                  <span className="slot-text">{isRevealed ? answer.text : "••••••••"}</span>
-                  <span className="slot-points">{isRevealed ? answer.points : "00"}</span>
-                </span>
-              </button>
-            );
-          })}
+        <div className="survey-board">
+          {[0, 4].map((start) => (
+            <div key={start} className="board-col">
+              {TEST_QUESTION.answers.slice(start, start + 4).map((answer, offset) => {
+                const i = start + offset;
+                const isRevealed = revealed[i];
+                return (
+                  <button
+                    key={answer.text}
+                    className={`answer-slot${isRevealed ? " revealed" : ""}`}
+                    type="button"
+                    onClick={() => reveal(i)}
+                    disabled={isRevealed || awarded}
+                  >
+                    <span className="slot-hidden" hidden={isRevealed}>
+                      <span className="slot-badge">{i + 1}</span>
+                    </span>
+                    <span className="slot-inner" hidden={!isRevealed}>
+                      <span className="slot-num">{i + 1}</span>
+                      <span className="slot-text">{answer.text}</span>
+                      <span className="slot-points">{answer.points}</span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          ))}
         </div>
 
         <div className="bank-row">
