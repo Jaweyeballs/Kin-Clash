@@ -6,28 +6,44 @@ type GameBoardProps = {
   onQuit: () => void;
 };
 
-const TEST_QUESTION = QUESTIONS[0];
+function emptyReveals(index: number) {
+  return QUESTIONS[index].answers.map(() => false);
+}
 
 export default function GameBoard({ onQuit }: GameBoardProps) {
-  const [revealed, setRevealed] = useState<boolean[]>(() =>
-    TEST_QUESTION.answers.map(() => false),
-  );
+  const [questionIndex, setQuestionIndex] = useState(0);
+  const [revealed, setRevealed] = useState<boolean[]>(() => emptyReveals(0));
+  const [leftover, setLeftover] = useState<boolean[]>(() => emptyReveals(0));
   const [strikes, setStrikes] = useState(0);
   const [scores, setScores] = useState<[number, number]>([0, 0]);
   const [awarded, setAwarded] = useState(false);
 
+  const question = QUESTIONS[questionIndex];
+
   const bank = useMemo(
     () =>
-      TEST_QUESTION.answers.reduce(
-        (sum, answer, i) => (revealed[i] ? sum + answer.points : sum),
+      question.answers.reduce(
+        (sum, answer, i) => (revealed[i] && !leftover[i] ? sum + answer.points : sum),
         0,
       ),
-    [revealed],
+    [question, revealed, leftover],
   );
 
+  function goTo(index: number) {
+    if (index < 0 || index >= QUESTIONS.length) return;
+    setQuestionIndex(index);
+    setRevealed(emptyReveals(index));
+    setLeftover(emptyReveals(index));
+    setStrikes(0);
+    setAwarded(false);
+  }
+
   function reveal(index: number) {
-    if (revealed[index] || awarded) return;
+    if (revealed[index]) return;
     setRevealed((prev) => prev.map((on, i) => (i === index ? true : on)));
+    if (awarded) {
+      setLeftover((prev) => prev.map((on, i) => (i === index ? true : on)));
+    }
     playReveal();
   }
 
@@ -61,27 +77,28 @@ export default function GameBoard({ onQuit }: GameBoardProps) {
         </div>
       </header>
 
-      <h2 className="prompt-banner">{TEST_QUESTION.prompt}</h2>
+      <h2 className="prompt-banner">{question.prompt}</h2>
 
       <section className="board-wrap">
         <div className="survey-board">
           {[0, 4].map((start) => (
-            <div key={start} className="board-col">
-              {TEST_QUESTION.answers.slice(start, start + 4).map((answer, offset) => {
+            <div key={`${question.id}-${start}`} className="board-col">
+              {question.answers.slice(start, start + 4).map((answer, offset) => {
                 const i = start + offset;
                 const isRevealed = revealed[i];
+                const isLeftover = leftover[i];
                 return (
                   <button
-                    key={answer.text}
-                    className={`answer-slot${isRevealed ? " revealed" : ""}`}
+                    key={`${question.id}-${i}`}
+                    className={`answer-slot${isRevealed ? " revealed" : ""}${isLeftover ? " leftover" : ""}`}
                     type="button"
                     onClick={() => reveal(i)}
-                    disabled={isRevealed || awarded}
+                    disabled={isRevealed}
                   >
-                    <span className="slot-hidden" hidden={isRevealed}>
+                    <span className="slot-hidden">
                       <span className="slot-badge">{i + 1}</span>
                     </span>
-                    <span className="slot-inner" hidden={!isRevealed}>
+                    <span className="slot-inner" aria-hidden={!isRevealed}>
                       <span className="slot-num">{i + 1}</span>
                       <span className="slot-text">{answer.text}</span>
                       <span className="slot-points">{answer.points}</span>
@@ -120,9 +137,30 @@ export default function GameBoard({ onQuit }: GameBoardProps) {
             Give to Team 2
           </button>
         </div>
-        <button className="host-btn" type="button" onClick={onQuit}>
-          Main menu
-        </button>
+        <div className="control-group">
+          <button
+            className="host-btn"
+            type="button"
+            onClick={() => goTo(questionIndex - 1)}
+            disabled={questionIndex === 0}
+          >
+            Previous
+          </button>
+          <span className="question-index">
+            {questionIndex + 1} / {QUESTIONS.length}
+          </span>
+          <button
+            className="host-btn"
+            type="button"
+            onClick={() => goTo(questionIndex + 1)}
+            disabled={questionIndex === QUESTIONS.length - 1}
+          >
+            Next
+          </button>
+          <button className="host-btn" type="button" onClick={onQuit}>
+            Main menu
+          </button>
+        </div>
       </footer>
     </main>
   );

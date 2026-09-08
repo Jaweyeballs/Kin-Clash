@@ -15,4 +15,18 @@ export const QUESTIONS: Question[] = [
       { text: "Who says grace", points: 3 },
     ],
   },
+  {
+    id: "test-fair",
+    prompt: "Name something you buy at a fall fair",
+    answers: [
+      { text: "Funnel cake", points: 28 },
+      { text: "Apple cider", points: 20 },
+      { text: "Corn dogs", points: 16 },
+      { text: "Tickets", points: 12 },
+      { text: "Pumpkins", points: 9 },
+      { text: "Cotton candy", points: 7 },
+      { text: "Fries", points: 5 },
+      { text: "Caramel apples", points: 3 },
+    ],
+  },
 ];
