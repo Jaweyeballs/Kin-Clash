@@ -6,6 +6,11 @@ type GameBoardProps = {
   onQuit: () => void;
 };
 
+type ScoreAward = {
+  team: 0 | 1;
+  points: number;
+};
+
 const BOARD_SLOTS = 8;
 
 function emptyReveals(index: number) {
@@ -18,9 +23,10 @@ export default function GameBoard({ onQuit }: GameBoardProps) {
   const [leftover, setLeftover] = useState<boolean[]>(() => emptyReveals(0));
   const [strikes, setStrikes] = useState(0);
   const [scores, setScores] = useState<[number, number]>([0, 0]);
-  const [awarded, setAwarded] = useState(false);
+  const [scoreAward, setScoreAward] = useState<ScoreAward | null>(null);
 
   const question = QUESTIONS[questionIndex];
+  const awarded = scoreAward !== null;
 
   const bank = useMemo(
     () =>
@@ -37,7 +43,7 @@ export default function GameBoard({ onQuit }: GameBoardProps) {
     setRevealed(emptyReveals(index));
     setLeftover(emptyReveals(index));
     setStrikes(0);
-    setAwarded(false);
+    setScoreAward(null);
   }
 
   function reveal(index: number) {
@@ -62,7 +68,17 @@ export default function GameBoard({ onQuit }: GameBoardProps) {
       next[team] += bank;
       return next;
     });
-    setAwarded(true);
+    setScoreAward({ team, points: bank });
+  }
+
+  function undoAward() {
+    if (!scoreAward) return;
+    setScores((prev) => {
+      const next: [number, number] = [...prev];
+      next[scoreAward.team] = Math.max(0, next[scoreAward.team] - scoreAward.points);
+      return next;
+    });
+    setScoreAward(null);
   }
 
   return (
@@ -141,6 +157,9 @@ export default function GameBoard({ onQuit }: GameBoardProps) {
           </button>
           <button className="host-btn team-b" type="button" onClick={() => award(1)} disabled={awarded || bank === 0}>
             Give to Team 2
+          </button>
+          <button className="host-btn undo" type="button" onClick={undoAward} disabled={!scoreAward}>
+            Undo score
           </button>
         </div>
         <div className="control-group">
