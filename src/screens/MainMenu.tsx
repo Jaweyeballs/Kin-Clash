@@ -22,7 +22,6 @@ export default function MainMenu({ onPlay }: MainMenuProps) {
       >
         PLAY
       </button>
-      <p className="menu-hint">Host mode — click an answer to reveal it</p>
       <div className="menu-preview" aria-hidden="true">
         {Array.from({ length: 8 }, (_, i) => (
           <div key={i} className="preview-slot" />

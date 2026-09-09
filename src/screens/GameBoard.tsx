@@ -6,8 +6,10 @@ type GameBoardProps = {
   onQuit: () => void;
 };
 
+const BOARD_SLOTS = 8;
+
 function emptyReveals(index: number) {
-  return QUESTIONS[index].answers.map(() => false);
+  return Array.from({ length: QUESTIONS[index].answers.length }, () => false);
 }
 
 export default function GameBoard({ onQuit }: GameBoardProps) {
@@ -83,8 +85,12 @@ export default function GameBoard({ onQuit }: GameBoardProps) {
         <div className="survey-board">
           {[0, 4].map((start) => (
             <div key={`${question.id}-${start}`} className="board-col">
-              {question.answers.slice(start, start + 4).map((answer, offset) => {
+              {Array.from({ length: BOARD_SLOTS / 2 }, (_, offset) => {
                 const i = start + offset;
+                const answer = question.answers[i];
+                if (!answer) {
+                  return <div key={`${question.id}-${i}`} className="answer-slot empty" />;
+                }
                 const isRevealed = revealed[i];
                 const isLeftover = leftover[i];
                 return (

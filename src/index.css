@@ -109,13 +109,6 @@ button:disabled {
   transform: translateY(1px);
 }
 
-.menu-hint {
-  margin: 22px 0 0;
-  font-size: 0.92rem;
-  letter-spacing: 0.08em;
-  color: var(--muted);
-}
-
 .menu-preview {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -278,6 +271,11 @@ button:disabled {
   background: rgba(0, 0, 0, 0.2);
 }
 
+.answer-slot.empty {
+  cursor: default;
+  opacity: 0.42;
+}
+
 .slot-hidden,
 .slot-inner {
   position: absolute;
@@ -330,12 +328,14 @@ button:disabled {
   padding: 0 14px;
   overflow: hidden;
   font-size: clamp(0.95rem, 1.8vw, 1.25rem);
+  line-height: 1.08;
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   text-align: left;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
 }
 
 .slot-points {
