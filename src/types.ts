@@ -8,3 +8,9 @@ export type Question = {
   prompt: string;
   answers: Answer[];
 };
+
+export type QuestionSet = {
+  id: string;
+  name: string;
+  questions: Question[];
+};

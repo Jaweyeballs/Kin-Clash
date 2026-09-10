@@ -1,4 +1,6 @@
-import type { Question } from "../types";
+import type { Question, QuestionSet } from "../types";
+
+const SET_SIZE = 5;
 
 const pointsByAnswerCount: Record<number, number[]> = {
   4: [40, 30, 20, 10],
@@ -147,4 +149,24 @@ export const QUESTIONS: Question[] = [
     "Turn off the alarm", "Check their phone", "Use the bathroom", "Brush their teeth",
     "Make coffee", "Get dressed", "Stretch", "Make the bed",
   ]),
+  makeQuestion("teen-skills", "Name something teenagers consider important to be good at", [
+    "Sports", "Dancing", "Kissing", "Driving", "Making friends", "School",
+  ]),
 ];
+
+export const QUESTION_SETS: QuestionSet[] = (() => {
+  if (QUESTIONS.length % SET_SIZE !== 0) {
+    throw new Error(`Questions must divide evenly into sets of ${SET_SIZE}`);
+  }
+
+  const sets: QuestionSet[] = [];
+  for (let i = 0; i < QUESTIONS.length; i += SET_SIZE) {
+    const setNumber = i / SET_SIZE + 1;
+    sets.push({
+      id: `set-${setNumber}`,
+      name: `Question Set ${setNumber}`,
+      questions: QUESTIONS.slice(i, i + SET_SIZE),
+    });
+  }
+  return sets;
+})();

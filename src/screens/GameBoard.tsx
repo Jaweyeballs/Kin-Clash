@@ -1,8 +1,10 @@
-import { useMemo, useState } from "react";
-import { QUESTIONS } from "../data/questions";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { QUESTION_SETS } from "../data/questions";
 import { playReveal, playStrike } from "../lib/sfx";
+import type { Question } from "../types";
 
 type GameBoardProps = {
+  setIndex: number;
   onQuit: () => void;
 };
 
@@ -13,20 +15,32 @@ type ScoreAward = {
 
 const BOARD_SLOTS = 8;
 
-function emptyReveals(index: number) {
-  return Array.from({ length: QUESTIONS[index].answers.length }, () => false);
+function emptyReveals(questions: Question[], index: number) {
+  return Array.from({ length: questions[index].answers.length }, () => false);
 }
 
-export default function GameBoard({ onQuit }: GameBoardProps) {
+export default function GameBoard({ setIndex, onQuit }: GameBoardProps) {
+  const questionSet = QUESTION_SETS[setIndex];
+  const questions = questionSet.questions;
+
   const [questionIndex, setQuestionIndex] = useState(0);
-  const [revealed, setRevealed] = useState<boolean[]>(() => emptyReveals(0));
-  const [leftover, setLeftover] = useState<boolean[]>(() => emptyReveals(0));
+  const [revealed, setRevealed] = useState<boolean[]>(() => emptyReveals(questions, 0));
+  const [leftover, setLeftover] = useState<boolean[]>(() => emptyReveals(questions, 0));
   const [strikes, setStrikes] = useState(0);
   const [scores, setScores] = useState<[number, number]>([0, 0]);
   const [scoreAward, setScoreAward] = useState<ScoreAward | null>(null);
+  const [stealFlash, setStealFlash] = useState(false);
+  const [stealUsed, setStealUsed] = useState(false);
+  const stealTimer = useRef<number | null>(null);
 
-  const question = QUESTIONS[questionIndex];
+  const question = questions[questionIndex];
   const awarded = scoreAward !== null;
+
+  useEffect(() => {
+    return () => {
+      if (stealTimer.current !== null) window.clearTimeout(stealTimer.current);
+    };
+  }, []);
 
   const bank = useMemo(
     () =>
@@ -38,12 +52,18 @@ export default function GameBoard({ onQuit }: GameBoardProps) {
   );
 
   function goTo(index: number) {
-    if (index < 0 || index >= QUESTIONS.length) return;
+    if (index < 0 || index >= questions.length) return;
     setQuestionIndex(index);
-    setRevealed(emptyReveals(index));
-    setLeftover(emptyReveals(index));
+    setRevealed(emptyReveals(questions, index));
+    setLeftover(emptyReveals(questions, index));
     setStrikes(0);
     setScoreAward(null);
+    setStealFlash(false);
+    setStealUsed(false);
+    if (stealTimer.current !== null) {
+      window.clearTimeout(stealTimer.current);
+      stealTimer.current = null;
+    }
   }
 
   function reveal(index: number) {
@@ -56,9 +76,21 @@ export default function GameBoard({ onQuit }: GameBoardProps) {
   }
 
   function addStrike() {
-    if (strikes >= 3 || awarded) return;
-    setStrikes((n) => n + 1);
+    if (awarded) return;
+    if (strikes < 3) {
+      setStrikes((n) => n + 1);
+      playStrike();
+      return;
+    }
+    if (stealUsed) return;
+    setStealUsed(true);
+    setStealFlash(true);
     playStrike();
+    if (stealTimer.current !== null) window.clearTimeout(stealTimer.current);
+    stealTimer.current = window.setTimeout(() => {
+      setStealFlash(false);
+      stealTimer.current = null;
+    }, 1200);
   }
 
   function award(team: 0 | 1) {
@@ -88,7 +120,7 @@ export default function GameBoard({ onQuit }: GameBoardProps) {
           <span className="score-label">TEAM 1</span>
           <span className="score-value">{scores[0]}</span>
         </div>
-        <h1 className="game-brand">FAMILY FEUD</h1>
+        <h1 className="game-brand">{questionSet.name.toUpperCase()}</h1>
         <div className="score-card right">
           <span className="score-label">TEAM 2</span>
           <span className="score-value">{scores[1]}</span>
@@ -99,6 +131,11 @@ export default function GameBoard({ onQuit }: GameBoardProps) {
 
       <section className="board-wrap">
         <div className="survey-board">
+          {stealFlash ? (
+            <div className="steal-flash" aria-hidden="true">
+              <span className="steal-flash-x">X</span>
+            </div>
+          ) : null}
           {[0, 4].map((start) => (
             <div key={`${question.id}-${start}`} className="board-col">
               {Array.from({ length: BOARD_SLOTS / 2 }, (_, offset) => {
@@ -149,7 +186,7 @@ export default function GameBoard({ onQuit }: GameBoardProps) {
 
       <footer className="controls">
         <div className="control-group">
-          <button className="host-btn danger" type="button" onClick={addStrike} disabled={awarded || strikes >= 3}>
+          <button className="host-btn danger" type="button" onClick={addStrike} disabled={awarded || stealUsed}>
             Strike
           </button>
           <button className="host-btn team-a" type="button" onClick={() => award(0)} disabled={awarded || bank === 0}>
@@ -172,18 +209,18 @@ export default function GameBoard({ onQuit }: GameBoardProps) {
             Previous
           </button>
           <span className="question-index">
-            {questionIndex + 1} / {QUESTIONS.length}
+            {questionIndex + 1} / {questions.length}
           </span>
           <button
             className="host-btn"
             type="button"
             onClick={() => goTo(questionIndex + 1)}
-            disabled={questionIndex === QUESTIONS.length - 1}
+            disabled={questionIndex === questions.length - 1}
           >
             Next
           </button>
           <button className="host-btn" type="button" onClick={onQuit}>
-            Main menu
+            Question sets
           </button>
         </div>
       </footer>
