@@ -1,4 +1,5 @@
 import { useState } from "react";
+import FullscreenButton from "./components/FullscreenButton";
 import GameBoard from "./screens/GameBoard";
 import MainMenu from "./screens/MainMenu";
 import SetSelect from "./screens/SetSelect";
@@ -11,6 +12,7 @@ export default function App() {
 
   return (
     <div className="app">
+      {screen !== "game" ? <FullscreenButton /> : null}
       {screen === "menu" ? (
         <MainMenu onPlay={() => setScreen("sets")} />
       ) : screen === "sets" ? (

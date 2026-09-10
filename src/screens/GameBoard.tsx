@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import FullscreenButton from "../components/FullscreenButton";
 import { QUESTION_SETS } from "../data/questions";
 import { playReveal, playStrike } from "../lib/sfx";
 import type { Question } from "../types";
@@ -222,6 +223,7 @@ export default function GameBoard({ setIndex, onQuit }: GameBoardProps) {
           <button className="host-btn" type="button" onClick={onQuit}>
             Question sets
           </button>
+          <FullscreenButton />
         </div>
       </footer>
     </main>

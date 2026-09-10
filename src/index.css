@@ -136,20 +136,12 @@ button:disabled {
 }
 
 .set-select-title {
-  margin: 0 0 8px;
+  margin: 0 0 28px;
   font-family: "Bebas Neue", sans-serif;
   font-size: clamp(2.4rem, 8vw, 4rem);
   letter-spacing: 0.08em;
   color: var(--gold);
   text-shadow: 0 2px 0 #c48a00;
-}
-
-.set-select-sub {
-  margin: 0 0 28px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--muted);
-  font-size: 0.95rem;
 }
 
 .set-grid {
@@ -558,6 +550,17 @@ button:disabled {
 .host-btn.undo {
   border-color: rgba(255, 210, 0, 0.55);
   color: var(--gold);
+}
+
+.fullscreen-btn {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  z-index: 20;
+}
+
+.controls .fullscreen-btn {
+  position: static;
 }
 
 .host-btn:disabled {
